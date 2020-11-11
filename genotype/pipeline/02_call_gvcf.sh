@@ -19,7 +19,6 @@ if [ ! -f $DICT ]; then
 	picard CreateSequenceDictionary R=$GENOMEIDX O=$DICT
 fi
 mkdir -p $VARIANTFOLDER
-TEMP=/scratch
 CPU=1
 if [ $SLURM_CPUS_ON_NODE ]; then
  CPU=$SLURM_CPUS_ON_NODE

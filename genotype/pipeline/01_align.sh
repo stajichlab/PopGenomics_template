@@ -7,7 +7,6 @@ module load gatk/4
 module load java/13
 
 MEM=32g
-TEMP=/scratch
 
 mkdir -p $ALNFOLDER
 mkdir -p $TOPOUTDIR
