@@ -15,7 +15,6 @@ do
 	parallel --jobs $CPU mosdepth -f $REFGENOME -T 1,10,50,100,200 -n --by $WINDOW -t 2 "{= s:$ALNFOLDER\/:coverage/mosdepth/:; s:\.$HTCEXT:.${WINDOW}bp: =}" {} ::: $ALNFOLDER/*.$HTCEXT
 done
 
-#bash scripts/mosdepth_prep_ggplot.sh
 mkdir -p plots
-#Rscript scripts/plot_mosdepth_CNV.R
+Rscript scripts/plot_mosdepth_CNV.R
 
