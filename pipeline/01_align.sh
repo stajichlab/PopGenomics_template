@@ -8,8 +8,7 @@ module load java/13
 
 MEM=32g
 
-mkdir -p $ALNFOLDER
-mkdir -p $TOPOUTDIR
+TOPOUTDIR=tmp
 
 if [ -f config.txt ]; then
   source config.txt
@@ -22,7 +21,7 @@ fi
 if [ ! -f $REFGENOME.dict ]; then
   echo "NEED a $REFGENOME.dict - make sure 00_index.sh is run"
 fi
-mkdir -p $TOPOUTDIR
+mkdir -p $TOPOUTDIR $ALNFOLDER
 
 CPU=2
 if [ $SLURM_CPUS_ON_NODE ]; then
