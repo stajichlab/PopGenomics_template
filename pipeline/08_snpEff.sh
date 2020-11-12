@@ -7,7 +7,7 @@ module load bcftools/1.11
 module load tabix
 # THIS IS AN EXAMPLE OF HOW TO MAKE SNPEFF - it is for A.fumigatus 
 SNPEFFGENOME=AfumigatusAf293_FungiDB_39
-GFFGENOME=FungiDB-39_AfumigatusAf293.gff
+GFFGENOME=$SNPEFFGENOME.gff
 
 MEM=64g
 
@@ -74,7 +74,7 @@ bcftools query -H -f '%CHROM\t%POS\t%REF\t%ALT{0}[\t%TGT]\t%INFO/ANN\n' $OUTVCF 
 
 # this requires python3 and vcf script
 # this assumes the interpro domains were downloaded from FungiDB and their format - you will need to generalize this
-../scripts/map_snpEff2domains.py --vcf $OUTVCF --domains ../genome/FungiDB-39_AfumigatusAf293_InterproDomains.txt --output $DOMAINVAR
+../scripts/map_snpEff2domains.py --vcf $OUTVCF --domains ../genome/${SNPEFFGENOME}_InterproDomains.txt --output $DOMAINVAR
 
 # this requires Python and the vcf library to be installed
 ../scripts/snpEff_2_tab.py $OUTVCF > $OUTMATRIX
