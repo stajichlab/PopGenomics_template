@@ -8,7 +8,7 @@ module load java/13
 
 MEM=32g
 
-TOPOUTDIR=tmp
+TMPOUTDIR=tmp
 
 if [ -f config.txt ]; then
   source config.txt
@@ -21,7 +21,7 @@ fi
 if [ ! -f $REFGENOME.dict ]; then
   echo "NEED a $REFGENOME.dict - make sure 00_index.sh is run"
 fi
-mkdir -p $TOPOUTDIR $ALNFOLDER
+mkdir -p $TMPOUTDIR $ALNFOLDER
 
 CPU=2
 if [ $SLURM_CPUS_ON_NODE ]; then
@@ -55,8 +55,8 @@ do
   echo "STRAIN is $STRAIN $PAIR1 $PAIR2"
 
   TMPBAMFILE=$TEMP/$STRAIN.unsrt.bam
-  SRTED=$TOPOUTDIR/$STRAIN.srt.bam
-  DDFILE=$TOPOUTDIR/$STRAIN.DD.bam
+  SRTED=$TMPOUTDIR/$STRAIN.srt.bam
+  DDFILE=$TMPOUTDIR/$STRAIN.DD.bam
   FINALFILE=$ALNFOLDER/$STRAIN.$HTCEXT
 
   READGROUP="@RG\tID:$STRAIN\tSM:$STRAIN\tLB:$PREFIX\tPL:illumina\tCN:$RGCENTER"
