@@ -66,7 +66,7 @@ do
       if [ ! -s $SRTED ]; then
         if [ -e $PAIR1 ]; then
           if [ ! -f $TMPBAMFILE ]; then
-	    # potential switch this to bwa-mem2 for extra speed
+            # potential switch this to bwa-mem2 for extra speed
             bwa mem -t $CPU -R $READGROUP $REFGENOME $PAIR1 $PAIR2 | samtools view -1 -o $TMPBAMFILE
           fi
         else
@@ -81,7 +81,7 @@ do
       fi # SRTED file exists or was created by this block
 
       time java -jar $PICARD MarkDuplicates I=$SRTED O=$DDFILE \
-      METRICS_FILE=logs/$STRAIN.dedup.metrics CREATE_INDEX=true VALIDATION_STRINGENCY=SILENT
+        METRICS_FILE=logs/$STRAIN.dedup.metrics CREATE_INDEX=true VALIDATION_STRINGENCY=SILENT
       if [ -f $DDFILE ]; then
         rm -f $SRTED
       fi
@@ -95,4 +95,16 @@ do
       rm -f $(echo $DDFILE | sed 's/bam$/bai/')
     fi
   fi #FINALFILE created or already exists
+  FQ=$(basename $FASTQEXT .gz)
+  UMAP=$UNMAPPED/${STRAIN}.$FQ
+  UMAPSINGLE=$UNMAPPED/${STRAIN}_single.$FQ
+  #echo "$UMAP $UMAPSINGLE $FQ"
+
+  if [ ! -f $UMAP ]; then
+    module load BBMap
+    samtools fastq -f 4 --threads $CPU -N -s $UMAPSINGLE -o $UMAP $FINALFILE
+    pigz $UMAPSINGLE
+    repair.sh in=$UMAP out=$UMAP.gz
+    unlink $UMAP
+  fi
 done
