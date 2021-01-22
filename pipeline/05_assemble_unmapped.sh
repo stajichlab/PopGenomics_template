@@ -3,8 +3,8 @@
 
 module load SPAdes/3.14.1
 MEM=24
-$UNMAPPEDASM=unmapped_asm
-$UNMAPPED=unmapped
+UNMAPPEDASM=unmapped_asm
+UNMAPPED=unmapped
 if [ -f config.txt ]; then
   source config.txt
 fi
