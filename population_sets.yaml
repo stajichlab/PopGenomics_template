@@ -1,0 +1,8 @@
+Populations:
+
+  All:
+    - Sample_Example_1
+
+  PopA:
+    - Sample_Example_1
+    - Sample_Example_2
