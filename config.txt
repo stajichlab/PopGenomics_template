@@ -28,3 +28,4 @@ SNPEFFOUT=snpEff
 snpEffConfig=snpEff.config
 SNPEFFGENOME=<<FIXME EXAMPLE: AfumigatusAf293_FungiDB_39>>
 GFFGENOME=<<FIXME EXAMPLE: FungiDB-39_AfumigatusAf293.gff>>
+POPYAML=population_sets.yaml
