@@ -52,7 +52,7 @@ iqtreerun() {
 	in=$1
 	out=$in.treefile
 	if [[ ! -f $out || $in -nt $out ]]; then
-		sbatch -p intel -n 6 -N 1 --mem 16gb -J iqtree --wrap "module load IQ-TREE/2.1.1; iqtree2 -m GTR+ASC -s $in -nt AUTO -b 100"
+		sbatch -p intel -n 6 -N 1 --mem 16gb -J iqtree --wrap "module load IQ-TREE/2.1.1; iqtree2 -m GTR+ASC -s $in -nt AUTO -bb 1000 -alrt 1000"
 	fi
 }
 
