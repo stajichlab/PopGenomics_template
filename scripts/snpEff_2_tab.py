@@ -4,10 +4,15 @@ import vcf,re,gzip,os
 from Bio import SeqIO
 # this script will convert a VCF from snpEff into a useful table
 FLANK_LENGTH=10
+genome = "/bigdata/stajichlab/shared/projects/Afum_popgenome/variantcall/genome/FungiDB-39_AfumigatusAf293_Genome.fasta"
 if len(sys.argv) < 2:
         warnings.warn("Usage snpEff_to_table.py snpeff.vcf genome")
         sys.exit()
 vcf_file = sys.argv[1]
+
+if len(sys.argv) > 2:
+        genome = sys.argv[2]
+
 newfilename = ""
 vcf_reader = None
 # deal with compressed files, tried to open on the fly but
@@ -25,10 +30,6 @@ else:
         warnings.warn("expected a .vcf file or .vcf.gz for input (%s)"%(vcf_file))
         sys.exit()
 
-genome = "/bigdata/stajichlab/shared/projects/Afum_popgenome/variantcall/genome/FungiDB-39_AfumigatusAf293_Genome.fasta"
-
-if len(sys.argv) > 2:
-        genome = sys.argv[2]
 count=0
 
 
