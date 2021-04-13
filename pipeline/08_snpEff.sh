@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-#SBATCH --mem=64G -p batch --nodes 1 --ntasks 2 --out logs/snpEff.log
+#SBATCH --mem=64G -p batch --nodes 1 --ntasks 8 --out logs/snpEff.log
 module unload miniconda2
 module load miniconda3
 module load snpEff
@@ -10,10 +10,13 @@ module load yq
 # THIS IS AN EXAMPLE OF HOW TO MAKE SNPEFF - it is for A.fumigatus
 SNPEFFGENOME=AfumigatusAf293_FungiDB_50
 GFFGENOME=$SNPEFFGENOME.gff
-
-DOMAINS=$TOPFOLDER/genome/$(basename ${GFFGENOME} .gff)_InterproDomains.txt
+CPU=$SLURM_CPUS_ON_NODE
+if [ -z $CPU ]; then
+  CPU=1
+fi
 MEM=64g
 TOPFOLDER=`pwd` # expecting to be run in top folder of the github checkout
+DOMAINS=$TOPFOLDER/genome/$(basename ${GFFGENOME} .gff)_InterproDomains.txt
 
 # this module defines SNPEFFJAR and SNPEFFDIR
 if [ -f config.txt ]; then
@@ -61,9 +64,12 @@ if [ ! -e $SNPEFFOUT/$snpEffConfig ]; then
 fi
 # get full path to YAML file
 POPYAML=$(realpath $POPYAML)
+REFGENOME=$(realpath $REFGENOME)
 pushd $SNPEFFOUT
-for POPNAME in $(yq eval '.Populations | keys' $POPYAML | perl -p -e 's/^\s*\-\s*//')
-do
+
+makeMatrix() {
+  POPNAME=$1
+  echo "POPNAME is $POPNAME"
   mkdir -p $POPNAME
   COMBVCF="$TOPFOLDER/$FINALVCF/$PREFIX.$POPNAME.SNP.combined_selected.vcf.gz $TOPFOLDER/$FINALVCF/$PREFIX.$POPNAME.INDEL.combined_selected.vcf.gz"
   echo "COMBVCF is '$COMBVCF'"
@@ -85,11 +91,11 @@ do
   OUTTAB=$PREFIX.$POPNAME.snpEff.tab
   OUTMATRIX=$PREFIX.$POPNAME.snpEff.matrix.tsv
   DOMAINVAR=$PREFIX.$POPNAME.snpEff.domain_variant.tsv
-	if [[ ! -s $INVCF || $TOPFOLDER/$FINALVCF/$PREFIX.$POPNAME.SNP.combined_selected.vcf.gz -nt $INVCF ]]; then
-  	bcftools concat -a -d both -o $INVCF -O v $COMBVCF
-	fi
-	echo " java -Xmx$MEM -jar $SNPEFFJAR eff -c $TOPFOLDER/$SNPEFFOUT/$snpEffConfig -dataDir $TOPFOLDER/$SNPEFFOUT/data -v $SNPEFFGENOME $INVCF > $OUTVCF"
-	java -Xmx$MEM -jar $SNPEFFJAR eff -c $TOPFOLDER/$SNPEFFOUT/$snpEffConfig -dataDir $TOPFOLDER/$SNPEFFOUT/data -v $SNPEFFGENOME $INVCF > $OUTVCF
+  if [[ ! -s $INVCF || $TOPFOLDER/$FINALVCF/$PREFIX.$POPNAME.SNP.combined_selected.vcf.gz -nt $INVCF ]]; then
+    bcftools concat -a -d both -o $INVCF -O v $COMBVCF
+  fi
+  echo " java -Xmx$MEM -jar $SNPEFFJAR eff -c $TOPFOLDER/$SNPEFFOUT/$snpEffConfig -dataDir $TOPFOLDER/$SNPEFFOUT/data -v $SNPEFFGENOME $INVCF > $OUTVCF"
+  java -Xmx$MEM -jar $SNPEFFJAR eff -c $TOPFOLDER/$SNPEFFOUT/$snpEffConfig -dataDir $TOPFOLDER/$SNPEFFOUT/data -v $SNPEFFGENOME $INVCF > $OUTVCF
 
   bcftools query -H -f '%CHROM\t%POS\t%REF\t%ALT{0}[\t%TGT]\t%INFO/ANN\n' $OUTVCF > $OUTTAB
 
@@ -98,6 +104,9 @@ do
   $TOPFOLDER/scripts/map_snpEff2domains.py --vcf $OUTVCF --domains $DOMAINS --output $DOMAINVAR
 
   # this requires Python and the vcf library to be installed
-  $TOPFOLDER/scripts/snpEff_2_tab.py $OUTVCF > $OUTMATRIX
+  $TOPFOLDER/scripts/snpEff_2_tab.py $OUTVCF $REFGENOME > $OUTMATRIX
   popd
-done
+}
+source $(which env_parallel.bash)
+export -f makeMatrix
+env_parallel -j $CPU --env _ makeMatrix ::: $(yq eval '.Populations | keys' $POPYAML | perl -p -e 's/^\s*\-\s*//' )

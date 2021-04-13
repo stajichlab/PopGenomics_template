@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-#SBATCH --mem 24G --nodes 1 --ntasks 2 -J slice.GVCFGeno --out logs/GVCFGenoGATK4.slice_%a.log  -p intel
+#SBATCH --mem 24G --nodes 1 --ntasks 2 -J slice.GVCFGeno --out logs/GVCFGenoGATK4.slice_%a.%A.log  -p intel,batch
 #--time 48:00:00
 hostname
 MEM=24g
@@ -58,8 +58,8 @@ if [ ! $CPU ]; then
     CPU=2
 fi
 if [[ $(ls $GVCFFOLDER | grep -c -P "\.g.vcf$") -gt "0" ]]; then
-    parallel -j $CPU bgzip {} ::: $GVCFFOLDER/*.g.vcf
-    parallel -j $CPU tabix -f {} ::: $GVCFFOLDER/*.g.vcf.gz
+   parallel -j $CPU bgzip {} ::: $GVCFFOLDER/*.g.vcf
+  parallel -j $CPU tabix -f {} ::: $GVCFFOLDER/*.g.vcf.gz
 fi
 
 if [[ -z $POPYAML || ! -s $POPYAML ]]; then

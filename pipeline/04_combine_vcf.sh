@@ -34,7 +34,7 @@ do
   for TYPE in SNP INDEL
   do
      OUT=$FINALVCF/$PREFIX.$POPNAME.$TYPE.combined_selected.vcf.gz
-     bcftools concat -Oz -o $OUT --threads $CPU $IN/$POPNAME/*.$TYPE.selected.vcf.gz
+     bcftools concat -Oz -o $OUT --threads $CPU $IN/$POPNAME/${PREFIX}.${TYPE}.selected.vcf.gz
      tabix $OUT
    done
  done
