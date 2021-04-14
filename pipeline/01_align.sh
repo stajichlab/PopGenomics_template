@@ -6,9 +6,9 @@ module load picard
 module load gatk/4
 module load java/13
 
-MEM=128g
+MEM=32g
 
-TMPOUTDIR=tmp
+TEMP=tmp
 
 if [ -f config.txt ]; then
   source config.txt
@@ -57,13 +57,12 @@ do
       echo "STRAIN is $STRAIN BASE is $BASE BASEPATTERN is $BASEPATTERN"
 
       TMPBAMFILE=$TEMP/$BASE.unsrt.bam
-      SRTED=$TMPOUTDIR/$BASE.srt.bam
-      DDFILE=$TMPOUTDIR/$BASE.DD.bam
+      SRTED=$TEMP/$BASE.srt.bam
+      DDFILE=$TEMP/$BASE.DD.bam
 
       FINALFILE=$ALNFOLDER/$STRAIN.$HTCEXT
       READGROUP="@RG\tID:$BASE\tSM:$STRAIN\tLB:$BASE\tPL:illumina\tCN:$RGCENTER"
       echo "$TMPBAMFILE $READGROUP"
-#      echo "bwa mem -t $CPU -R $READGROUP $REFGENOME $FASTQFOLDER/$BASEPATTERN | samtools sort --threads $CPU -O bam -o $SRTED -T $TEMP -"
 
       if [ ! -s $DDFILE ]; then
         if [ ! -s $SRTED ]; then
