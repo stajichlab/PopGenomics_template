@@ -18,7 +18,7 @@ DICT=$(echo $REFGENOME | sed 's/fasta$/dict/')
 if [ ! -f $DICT ]; then
 	picard CreateSequenceDictionary R=$GENOMEIDX O=$DICT
 fi
-mkdir -p $VARIANTFOLDER
+mkdir -p $GVCFFOLDER
 CPU=1
 if [ $SLURM_CPUS_ON_NODE ]; then
  CPU=$SLURM_CPUS_ON_NODE
@@ -42,7 +42,7 @@ do
   # BEGIN THIS PART IS PROJECT SPECIFIC LIKELY
   # END THIS PART IS PROJECT SPECIFIC LIKELY
   echo "STRAIN is $STRAIN"
-  GVCF=$VARIANTFOLDER/$STRAIN.g.vcf
+  GVCF=$GVCFFOLDER/$STRAIN.g.vcf
   ALNFILE=$ALNFOLDER/$STRAIN.$HTCEXT
   if [ -s $GVCF.gz ]; then
     echo "Skipping $STRAIN - Already called $STRAIN.g.vcf.gz"
