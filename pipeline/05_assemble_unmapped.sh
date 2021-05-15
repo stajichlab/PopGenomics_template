@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 #SBATCH -p batch -N 1 -n 8 --mem 24gb --out logs/assemble_unmapped.%a.log
 
-module load SPAdes/3.14.1
+module load SPAdes/3.15.2
 MEM=24
 UNMAPPEDASM=unmapped_asm
 UNMAPPED=unmapped
@@ -30,7 +30,7 @@ if [ $N -gt $MAX ]; then
 fi
 
 IFS=,
-tail -n +2 $SAMPFILE | sed -n ${N}p | while read FILEBASE STRAIN BioSample Center Experiment Project Organism
+tail -n +2 $SAMPFILE | sed -n ${N}p | while read STRAIN FILEBASE
 do
   UMAP=$UNMAPPED/${STRAIN}.$FASTQEXT
   UMAPSINGLE=$UNMAPPED/${STRAIN}_single.$FASTQEXT
