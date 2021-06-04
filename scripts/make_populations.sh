@@ -2,7 +2,7 @@
 
 echo -e "Populations:\n\n  All:" > population_sets.yaml
 IFS=,
-while read POPNAME FILES
+tail -n +2 samples.csv | while read POPNAME FILES
 do
 	echo "    - $POPNAME"
-done < samples.csv >> population_sets.yaml
+done >> population_sets.yaml
