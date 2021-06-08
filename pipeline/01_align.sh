@@ -5,7 +5,7 @@ module load samtools/1.12
 module load picard
 module load gatk/4
 module load java/13
-
+module load workspace/scratch
 MEM=32g
 
 TEMP=tmp
@@ -13,6 +13,7 @@ TEMP=tmp
 if [ -f config.txt ]; then
   source config.txt
 fi
+TEMP=$SCRATCH
 if [ -z $REFGENOME ]; then
   echo "NEED A REFGENOME - set in config.txt and make sure 00_index.sh is run"
   exit
