@@ -28,9 +28,9 @@ if [[ -z $POPYAML || ! -s $POPYAML ]]; then
 fi
 
 module load parallel
-module load bcftools/1.11
-module load samtools/1.11
-module load IQ-TREE/2.1.1
+module load bcftools/1.12
+module load samtools/1.12
+module load IQ-TREE/2.1.3
 module load fasttree
 declare -x TEMPDIR=$TEMP/$USER/$$
 

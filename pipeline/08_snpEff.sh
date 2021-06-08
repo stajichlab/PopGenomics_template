@@ -3,7 +3,7 @@
 module unload miniconda2
 module load miniconda3
 module load snpEff
-module load bcftools/1.11
+module load bcftools/1.12
 module load tabix
 module load yq
 
