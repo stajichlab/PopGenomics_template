@@ -11,18 +11,19 @@ module load java/13
 module load bcftools
 module load parallel
 module load yq
+module load workspace/scratch
 
 source config.txt
 
-declare -x TEMPDIR=$TEMP/$USER/$$
+#declare -x TEMPDIR=$TEMP/$USER/$$
 
-cleanup() {
+#cleanup() {
 	#echo "rm temp is: $TEMPDIR"
-	rm -rf $TEMPDIR
-}
+#	rm -rf $TEMPDIR
+#}#
 
 # Set trap to ensure cleanupis stopped
-trap "cleanup; rm -rf $TEMPDIR; exit" SIGHUP SIGINT SIGTERM EXIT
+#trap "cleanup; rm -rf $TEMPDIR; exit" SIGHUP SIGINT SIGTERM EXIT
 
 GVCF_INTERVAL=1
 N=${SLURM_ARRAY_TASK_ID}
@@ -37,7 +38,7 @@ fi
 if [ -f config.txt ]; then
 	source config.txt
 fi
-
+TEMPDIR=$SCRATCH
 if [ ! -f $REFGENOME ]; then
     module load samtools/1.11
     samtools faidx $REFGENOME
