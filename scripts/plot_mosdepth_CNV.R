@@ -5,11 +5,11 @@ library(stringr)
 colors1 <- colorRampPalette(brewer.pal(8, "RdYlBu"))
 manualColors = c("dodgerblue2", "red1", "grey20")
 
-alternating_colors = rep( c("red", "black"), times= 15)
 Prefix = "BdenJEL423_SC0?" # fixme
 mosdepthdir = "coverage/mosdepth"
-chrlist = 1:9
-windows = c(5000, 10000)
+chrlist = 1:9 # fix me
+alternating_colors = rep( c("red", "black"), times= length(chrlist))
+windows = c(5000,10000,50000)
 
 #scale_colour_brewer(palette = "Set3") +
 
@@ -18,7 +18,7 @@ plot_strain <- function(strain, data) {
 	Title = sprintf("Chr coverage plot for %s", strain)
 	p <- ggplot(l, aes(x = pos, y = Depth, color = CHR)) +
 		scale_colour_manual(values = alternating_colors) +
-		geom_point(alpha = 0.9, size = 0.8, shape = 16) +
+		geom_point(alpha = 0.9, size = 0.8, shape = 16,show.legend = FALSE) +
 		labs(title = Title,xlab = "Position", y = "Normalized Read Depth") +
 		scale_x_continuous(name = "Chromosome",	expand = c(0, 0), breaks = ticks, labels = unique(l$CHR) ) +
 		scale_y_continuous(name = "Normalized Read Depth",expand = c(0, 0), limits = c(0, 3)) +
@@ -31,7 +31,7 @@ plot_chrs <- function(chrom, data) {
 	l <- subset(data, data$CHR == chrom)
 	l$bp <- l$Start
 	p <- ggplot(l, aes(x = bp, y = Depth, color = Strain)) +
-	geom_point(alpha = 0.7,	size = 0.8, shape = 16) + # scale_color_brewer(palette='RdYlBu',type='seq') +
+	geom_point(alpha = 0.7,	size = 0.8, shape = 16,show.legend = FALSE) + # scale_color_brewer(palette='RdYlBu',type='seq') +
 	labs(title = Title, xlab = "Position", y = "Normalized Read Depth") +
 	scale_x_continuous(expand = c(0,	0), name = "Position") +
 	scale_y_continuous(name = "Normalized Read Depth", expand = c(0, 0), limits = c(0, 3)) +
@@ -59,12 +59,13 @@ for (window in windows) {
   unique(bedwindows$STRAIN)
   colnames(bedwindows) = c("Chr", "Start", "End", "Depth", "Strain")
 
-  bedwindows$CHR <- sub(Prefix, "", bedwindows$Chr, perl = TRUE)
-	unique(bedwindows$CHR)
-	#subset(bedwindows,bedwindows)
-	bedwindows$CHR <- bedwindows$CHR
+  bedwindows$CHR <- as.numeric(sub(Prefix, "", bedwindows$Chr, perl = TRUE))
+  unique(bedwindows$CHR)
+  #subset(bedwindows,bedwindows)
+  #bedwindows$CHR <- bedwindows$CHR
   d = bedwindows[bedwindows$CHR %in% chrlist, ]
-
+  d$Start <- as.numeric(d$Start)
+  d$End   <- as.numeric(d$End)
   d <- d[order(as.numeric(d$CHR), d$Start), ]
   d$index = rep.int(seq_along(unique(d$CHR)), times = tapply(d$Start, d$CHR, length))
 
@@ -82,8 +83,7 @@ for (window in windows) {
       ## chromosome position maybe not start at 1, eg. 9999. So gaps may be produced.
       lastbase = lastbase + max(d[d$index == (i - 1), "Start"])
       minor[i] = lastbase
-      d[d$index == i, "Start"] = d[d$index == i, "Start"] - min(d[d$index ==
-        i, "Start"]) + 1
+      d[d$index == i, "Start"] = d[d$index == i, "Start"] - min(d[d$index == i, "Start"]) + 1
       d[d$index == i, "End"] = lastbase
       d[d$index == i, "pos"] = d[d$index == i, "Start"] + lastbase
     }
@@ -101,7 +101,7 @@ for (window in windows) {
   # scale_color_brewer(palette='RdYlBu',type='seq') +
   p <- ggplot(d, aes(x = pos, y = Depth, color = Strain)) + geom_vline(mapping = NULL,
     xintercept = minorB, alpha = 0.5, size = 0.1, colour = "grey15") +
-		geom_point(alpha = 0.8, size = 0.4, shape = 16) +
+		geom_point(alpha = 0.8, size = 0.4, shape = 16, show.legend = FALSE) +
   	labs(title = Title, xlab = "Position", y = "Normalized Read Depth") +
 		scale_x_continuous(name = "Chromosome",  expand = c(0, 0), breaks = ticks, labels = unique(d$CHR)) +
 			scale_y_continuous(name = "Normalized Read Depth",expand = c(0, 0), limits = c(0, 3)) +
@@ -117,7 +117,7 @@ for (window in windows) {
 	strains = unique(d$Strain)
 	for(i in 1:length(unique(d$Strain) ) ) {
 		pdffile=sprintf("plots/StrainPlot_%dkb.%s.pdf", window/1000,strains[[i]])
-  	ggsave(plot = plts[[i]], file = pdffile)
+  		ggsave(plot = plts[[i]], file = pdffile,width=16)
 	}
 
 	#print(plts)
