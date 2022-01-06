@@ -33,7 +33,7 @@ if [ $N -gt $MAX ]; then
 fi
 
 IFS=,
-tail -n +2 $SAMPFILE | sed -n ${N}p | while read FILEBASE STRAIN BioSample Center Experiment Project Organism
+tail -n +2 $SAMPFILE | sed -n ${N}p | while read STRAIN FILEBASE 
 do
   if [ ! -f $OUTSEARCH/$STRAIN.uniprot.diamond.tsv ]; then
     diamond blastx --db $DB -q $UNMAPPEDASM/$STRAIN/scaffolds.fasta --out $OUTSEARCH/$STRAIN.uniprot.diamond.tsv \
