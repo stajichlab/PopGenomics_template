@@ -41,5 +41,5 @@ if [[ ! -f $DICT || $FASTAFILE -nt $DICT ]]; then
 	samtools dict $FASTAFILE > $DICT
 	ln -s $DICT $FASTAFILE.dict 
 fi
-
+grep ">" $FASTAFILE | perl -p -e 's/>((Chr)?(\d+|mito)_\S+)\s+.+/$1,$3/' > chrom_nums.csv
 popd
