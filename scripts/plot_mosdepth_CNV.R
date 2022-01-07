@@ -3,19 +3,17 @@ library(RColorBrewer)
 library(tidyverse)
 library(stringr)
 library(dplyr)
-#colors1 <- colorRampPalette(brewer.pal(8, "RdYlBu"))
-#manualColors = c("dodgerblue2", "red1", "grey20")
 
-Prefix = "MWKM010+(\\d+).1" # fixme
+chrlist = read_csv("genome/chrom_nums.csv",col_names=c("Chr","CHR"),col_types="ci")
 mosdepthdir = "coverage/mosdepth"
-chrlist = 1:15
+
 windows = c(5000,10000, 50000)
-alternating_colors = rep( c("red", "black"), times = length(chrlist))
+alternating_colors = rep( c("red", "black"), times = length(chrlist$Chr))
 
 plot_strain <- function(strain, data) {
     l = data %>% filter(Strain == strain)
     Title = sprintf("Chr coverage plot for %s", strain)
-    p <- ggplot(l, aes(x = pos, y = Depth, color = factor(CHR))) +
+    p <- ggplot(l, aes(x = pos, y = NormDepth, color = factor(CHR))) +
         scale_colour_manual(values = alternating_colors) +
         geom_point(alpha = 0.9, size = 0.8, shape = 16, show.legend = FALSE) +
         labs(title = Title,xlab = "Position", y = "Normalized Read Depth") +
@@ -29,7 +27,7 @@ plot_chrs <- function(chrom, data) {
     Title = sprintf("Chr%s depth of coverage", chrom)
     l = data %>% filter(CHR == chrom)
     l$bp <- l$Start
-    p <- ggplot(l, aes(x = bp, y = Depth, color = factor(Strain))) +
+    p <- ggplot(l, aes(x = bp, y = NormDepth, color = factor(Strain))) +
 	geom_point(alpha = 0.7,	size = 0.8, shape = 16, show.legend = FALSE) + # scale_color_brewer(palette='RdYlBu',type='seq') +
 	labs(title = Title, xlab = "Position", y = "Normalized Read Depth") +
 	scale_x_continuous(expand = c(0,	0), name = "Position") +
@@ -38,6 +36,7 @@ plot_chrs <- function(chrom, data) {
                                         #guides(fill = guide_legend(keywidth = 3,keyheight = 1))
 }
 
+ChromDepths = tibble(strain=c(),ChromDepth=c())
 for (window in windows) {
     inpattern = sprintf(".%sbp.regions.bed.gz$", window)
     file_list <- list.files(path = mosdepthdir, pattern = inpattern)
@@ -45,27 +44,25 @@ for (window in windows) {
     for (i in 1:length(file_list)) {
         infile = sprintf("%s/%s", mosdepthdir, file_list[i])
         strain = str_replace(file_list[i], inpattern, "")
-                                        # fix me here?
         t = read_tsv(infile, col_names = c("Chr", "Start", "End", "Depth"), col_types ="ciid")
-                                        #replace(t$Chr,t$Chr == "BdenJEL423_mito","BdenJEL423_SC70")
         t$Strain = c(strain)
         medianDepth = median(t$Depth)
-        t$Depth = t$Depth / medianDepth
+        t$NormDepth = t$Depth / medianDepth
+        t = t %>% inner_join(.,chrlist)
+        ChromDepths <- bind_rows(ChromDepths,t %>% group_by(Strain,CHR) %>% summarize(meddpth=median(Depth),.groups="keep"))
         bedwindows <- bind_rows(bedwindows, t)
     }
     length(bedwindows$Strain)
     unique(bedwindows$Strain)
     length(unique(bedwindows$Strain))
-
-    bedwindows$CHR <- as.numeric(sub(Prefix, "\\1", bedwindows$Chr, perl = TRUE))
     unique(bedwindows$CHR)
-    d = bedwindows %>% filter(CHR %in% chrlist) %>% arrange(CHR,Start,Strain)
+    d = bedwindows %>% filter(CHR %in% chrlist$CHR) %>% arrange(CHR,Start,Strain)
 
     d$index = rep.int(seq_along(unique(d$CHR)), times = tapply(d$Start, d$CHR, length))
 
     d$pos = NA
 
-    nchr = length(unique(chrlist))
+    nchr = length(unique(chrlist$CHR))
     lastbase = 0
     ticks = NULL
     minor = vector(, 8)
@@ -100,18 +97,17 @@ for (window in windows) {
         scale_x_continuous(name = "Chromosome",  expand = c(0, 0), breaks = ticks, labels = unique(d$CHR)) +
         scale_y_continuous(name = "Normalized Read Depth",expand = c(0, 0), limits = c(0, 5)) +
         theme_classic()
-                                        #			guides(fill = guide_legend(keywidth = 3,keyheight = 1))
+#guides(fill = guide_legend(keywidth = 3,keyheight = 1))
 
     pdffile = sprintf("plots/genomewide_coverage_%dkb.pdf", window/1000)
     ggsave(p,file=pdffile,width=16,height=4)
 
     plts <- lapply(unique(d$Strain), plot_strain, data = d)
 
-                                        #ggsave(pdffile, device = "pdf",width=12)
     strains = unique(d$Strain)
     for(i in 1:length(strains ) ) {
-        pdffile=sprintf("plots/StrainPlot_%dkb.%s.pdf", window/1000,strains[[i]])
-  	ggsave(plot = plts[[i]], file = pdffile,width=16)
+      pdffile=sprintf("plots/StrainPlot_%dkb.%s.pdf", window/1000,strains[[i]])
+  	  ggsave(plot = plts[[i]], file = pdffile,width=16)
     }
 
     plts <- lapply(1:nchr, plot_chrs, data = d)
@@ -120,3 +116,5 @@ for (window in windows) {
         ggsave(plot = plts[[i]], file = pdffile)
     }
 }
+cd<-ChromDepths %>% pivot_wider(names_from=CHR, values_from=meddpth,names_prefix="Chr")
+write_tsv(cd,"coverage/Chromosome_Depths.tsv")
