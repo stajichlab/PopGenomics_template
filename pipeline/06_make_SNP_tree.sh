@@ -1,15 +1,15 @@
 #!/usr/bin/bash
-#SBATCH --mem=24gb --ntasks 24 --nodes 1
+#SBATCH --mem=24gb --ntasks 48 --nodes 1 
 #SBATCH --time=2:00:00 -p short
 #SBATCH -J maketree --out logs/make_tree.log
 
 module load yq
+module load workspace/scratch
 
 CPU=2
 if [ $SLURM_CPUS_ON_NODE ]; then
   CPU=$SLURM_CPUS_ON_NODE
 fi
-TEMP=/scratch
 
 if [[ -f config.txt ]]; then
   source config.txt
@@ -27,25 +27,16 @@ if [[ -z $POPYAML || ! -s $POPYAML ]]; then
   exit
 fi
 
+module unload miniconda2
+module unload miniconda3
 module load parallel
-module load bcftools/1.12
-module load samtools/1.12
+module load bcftools/1.14
+module load samtools/1.14
 module load IQ-TREE/2.1.3
 module load fasttree
-declare -x TEMPDIR=$TEMP/$USER/$$
-
-cleanup() {
-	#echo "rm temp is: $TEMPDIR"
-	rm -rf $TEMPDIR
-}
-
-# Set trap to ensure cleanupis stopped
-trap "cleanup; rm -rf $TEMPDIR; exit" SIGHUP SIGINT SIGTERM EXIT
-
-mkdir -p $TEMPDIR
 
 print_fas() {
-  printf ">%s\n%s\n" $1 $(bcftools view -e 'QUAL < 1000 || AF=1' $2 | bcftools query -e 'INFO/AF < 0.1' -s $1 -f '[%TGT]')
+  printf ">%s\n%s\n" $1 $(bcftools query -s $1 -f '[%TGT]' $2)
 }
 
 iqtreerun() {
@@ -66,7 +57,7 @@ fasttreerun() {
 
 export -f print_fas fasttreerun iqtreerun
 mkdir -p $TREEDIR
-for POPNAME in $(yq eval '.Populations | keys' $POPYAML | perl -p -e 's/^\s*\-\s*//')
+for POPNAME in $(yq eval '.Populations | keys' $POPYAML | perl -p -e 's/^\s*\-\s*//' )
 do
   for TYPE in SNP
   do
@@ -81,9 +72,11 @@ do
     vcf=$root.vcf.gz
     if [[ ! -f $FAS || ${vcf} -nt $FAS ]]; then
       rm -f $FAS
-      vcftmp=$TEMPDIR/$PREFIX.$POPNAME.$TYPE.combined_selected.vcf.gz
-      rsync -a $vcf $vcftmp
-      rsync -a $vcf.tbi $vcftmp.tbi
+      vcftmp=$SCRATCH/$PREFIX.$POPNAME.$TYPE.combined_selected.bcf
+      bcftools view --threads 4 -e 'QUAL < 1000 || AF=1 || INFO/AF < 0.1' $vcf -Ob -o $vcftmp 
+      bcftools index $vcftmp
+
+      #rsync -a $vcf.tbi $vcftmp.tbi
       # no ref genome alleles
       #printf ">%s\n%s\n" $REFNAME $(bcftools view -e 'AF=1' ${vcf} | bcftools query -e 'INFO/AF < 0.1' -f '%REF') > $FAS
       parallel -j $CPU print_fas ::: $(bcftools query -l ${vcf}) ::: $vcftmp >> $FAS
@@ -91,5 +84,6 @@ do
     fi
   done
 done
+exit
 parallel -j 2 fasttreerun ::: $(ls $TREEDIR/*.mfa)
 parallel -j 4 iqtreerun ::: $(ls $TREEDIR/*.mfa)
