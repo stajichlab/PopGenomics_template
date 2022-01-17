@@ -1,6 +1,9 @@
 #!/usr/bin/bash
 #SBATCH -p intel --mem 64gb -N 1 -n 4 --out logs/concat_vcf.log -p short
 
+module unload miniconda2
+module load miniconda3
+source activate cyvcf2
 module load bcftools
 module load yq
 
@@ -34,7 +37,14 @@ do
   for TYPE in SNP INDEL
   do
      OUT=$FINALVCF/$PREFIX.$POPNAME.$TYPE.combined_selected.vcf.gz
-     bcftools concat -Oz -o $OUT --threads $CPU $IN/$POPNAME/${PREFIX}.*.${TYPE}.selected.vcf.gz
-     tabix $OUT
+     QC=$FINALVCF/$PREFIX.$POPNAME.$TYPE.combined_selected.QC.txt
+     if [ ! -s $OUT ];  then
+     	bcftools concat -Oz -o $OUT --threads $CPU $IN/$POPNAME/${PREFIX}.*.${TYPE}.selected.vcf.gz
+     	tabix $OUT
+     fi
+     if [[ ! -s $QC || $OUT -nt $QC ]]; then
+     	./scripts/vcf_QC_report.py --vcf $OUT -o $FINALVCF/$PREFIX.$POPNAME.$TYPE.combined_selected.QC.txt
+     fi
+
    done
  done
