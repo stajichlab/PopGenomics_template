@@ -1,8 +1,9 @@
-#!/usr/bin/bash
+#!/usr/bin/bash -l
 #SBATCH -p short -N 1 -n 8 --mem 32gb --out logs/unmapped_asm_classify.%a.log
 
-module load diamond/2.0.4
+module load diamond
 module load minimap2
+
 MEM=32
 UNMAPPEDASM=unmapped_asm
 OUTSEARCH=unmapped_asm_blast

@@ -51,7 +51,7 @@ for chrom in variants.seqnames:
     chromstats[chrom] = stats.copy()
 
 hdr = variants.raw_header
-mtch = re.finditer(r'##contig=\<ID=([^,]+),length=(\d+)\>',hdr)
+mtch = re.finditer(r'##contig=\<ID=([^,]+),length=(\d+)',hdr)
 for m in mtch:
     chrname = m.group(1)
     chrlen  = int(m.group(2))

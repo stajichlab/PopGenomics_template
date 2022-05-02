@@ -1,6 +1,6 @@
-#!/usr/bin/bash
-module load samtools/1.12
-module load bwa/0.7.17
+#!/usr/bin/bash -l
+module load samtools
+module load bwa
 if [ -f config.txt ]; then
 	source config.txt
 fi

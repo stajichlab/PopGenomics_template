@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/bash -l
 #SBATCH --mem=24gb --ntasks 48 --nodes 1 
 #SBATCH --time=2:00:00 -p short
 #SBATCH -J maketree --out logs/make_tree.log

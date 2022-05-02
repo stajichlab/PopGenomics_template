@@ -1,8 +1,10 @@
-#!/usr/bin/bash
-#SBATCH -p batch -N 1 -n 8 --mem 24gb --out logs/assemble_unmapped.%a.log
+#!/usr/bin/bash -l
+#SBATCH -p batch -N 1 -n 8 --mem 48gb --out logs/assemble_unmapped.%a.log
 
-module load SPAdes/3.15.2
-MEM=24
+module load spades
+module load fastp
+module load workspace/scratch
+MEM=48
 UNMAPPEDASM=unmapped_asm
 UNMAPPED=unmapped
 if [ -f config.txt ]; then
@@ -37,6 +39,10 @@ do
   if [[ ! -s $UMAP && ! -s $UMAPSINGLE ]]; then
     echo "Need unmapped FASTQ file, skipping $STRAIN ($FILEBASE)"
   else
-    spades.py --pe-12 1 $UMAP --pe-s 1 $UMAPSINGLE -o $UNMAPPEDASM/$STRAIN -t $CPU -m $MEM --careful
+    fastp -y --in1 $UMAP --interleaved_in --average_qual 4 --correction --compression 5 --out1 $SCRATCH/${STRAIN}_filter_1.fq.gz --out2 $SCRATCH/${STRAIN}_filter_2.fq.gz --merged_out $SCRATCH/${STRAIN}_merged.fq.gz --merge --json $UNMAPPED/$STRAIN.fastp.PE.json --html $UNMAPPED/$STRAIN.fastp.PE.html 
+    fastp -y --in1 $UMAPSINGLE -y --compression 5 --out1 $SCRATCH/${STRAIN}_single.fq.gz  --json $UNMAPPED/$STRAIN.fastp.SE.json --html $UNMAPPED/$STRAIN.fastp.SE.html
+
+    spades.py --pe-1 1 $SCRATCH/${STRAIN}_filter_1.fq.gz --pe-2 1 $SCRATCH/${STRAIN}_filter_2.fq.gz \
+	    --pe-s 1 $SCRATCH/${STRAIN}_single.fq.gz --pe-s 2 $SCRATCH/${STRAIN}_merged.fq.gz -o $UNMAPPEDASM/$STRAIN -t $CPU -m $MEM --careful --tmp-dir $SCRATCH
   fi
 done

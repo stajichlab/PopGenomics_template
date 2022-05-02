@@ -1,11 +1,9 @@
-#!/usr/bin/bash
+#!/usr/bin/bash -l
 #SBATCH -p intel --mem 64gb -N 1 -n 4 --out logs/concat_vcf.log -p short
 
-module unload miniconda2
-module load miniconda3
-source activate cyvcf2
 module load bcftools
 module load yq
+module load cyvcf2
 
 CPU=1
 if [ $SLURM_CPUS_ON_NODE ]; then
