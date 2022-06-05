@@ -4,7 +4,7 @@ module load bwa
 module load samtools
 module load picard
 module load gatk/4
-module load java/13
+module load java
 module load workspace/scratch
 MEM=32g
 
@@ -78,8 +78,8 @@ do
           fi
         fi # SRTED file exists or was created by this block
 
-        time java -jar $PICARD MarkDuplicates I=$SRTED O=$DDFILE \
-          METRICS_FILE=logs/$STRAIN.dedup.metrics CREATE_INDEX=true VALIDATION_STRINGENCY=SILENT
+        time java -jar $PICARD MarkDuplicates -I $SRTED -O $DDFILE \
+          -METRICS_FILE logs/$STRAIN.dedup.metrics -CREATE_INDEX true -VALIDATION_STRINGENCY SILENT
         if [ -f $DDFILE ]; then
           rm -f $SRTED
         fi
