@@ -1,4 +1,4 @@
-#!/usr/bin/bash  -l
+#!/usr/bin/bash -l
 #SBATCH --mem=64G -p batch --nodes 1 --ntasks 2 --out logs/snpEff.log
 
 # this module defines SNPEFFJAR and SNPEFFDIR
