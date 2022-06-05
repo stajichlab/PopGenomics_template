@@ -10,7 +10,8 @@ CPU=2
 if [ $SLURM_CPUS_ON_NODE ]; then
   CPU=$SLURM_CPUS_ON_NODE
 fi
-
+MLTREECPU=6 # num of CPUs to request for IQTREE jobs
+FTTREECPU=32 # num of CPUs to request for Fasttree jobs
 if [[ -f config.txt ]]; then
   source config.txt
 else
@@ -32,8 +33,6 @@ module unload miniconda3
 module load parallel
 module load bcftools
 module load samtools
-module load iqtree/2.2.0
-module load fasttree
 
 print_fas() {
   printf ">%s\n%s\n" $1 $(bcftools query -s $1 -f '[%TGT]' $2)
@@ -43,7 +42,7 @@ iqtreerun() {
 	in=$1
 	out=$in.treefile
 	if [[ ! -f $out || $in -nt $out ]]; then
-		sbatch -p intel -n 6 -N 1 --mem 16gb -J iqtree --wrap "module load IQ-TREE/2.1.1; iqtree2 -m GTR+ASC -s $in -nt AUTO -bb 1000 -alrt 1000"
+		sbatch -p intel -n $MLTREECPU -N 1 --mem 16gb -J iqtree --wrap "module load iqtree/2.2.0; iqtree2 -m GTR+ASC -s $in -nt AUTO -bb 1000 -alrt 1000"
 	fi
 }
 
@@ -51,7 +50,7 @@ fasttreerun() {
         in=$1
 	out=$(echo $in | perl -p -e 's/\.mfa/.fasttree.tre/')
         if [[ ! -f $out || $in -nt $out ]]; then
-                sbatch -p short -n 32 -N 1 --mem 16gb -p short -J FastTree --wrap "module load fasttree; FastTreeMP -gtr -gamma -nt < $in > $out"
+                sbatch -p short -n $FTTREECPU -N 1 --mem 24gb -p short -J FastTree --wrap "module load fasttree; FastTreeMP -gtr -gamma -nt < $in > $out"
         fi
 }
 
