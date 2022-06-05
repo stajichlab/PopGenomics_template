@@ -1,8 +1,9 @@
 #!/usr/bin/bash -l
-#SBATCH --mem 24G --nodes 1 --ntasks 2 -J slice.GVCFGeno --out logs/GVCFGenoGATK4.slice_%a.%A.log  -p intel,batch
-#--time 48:00:00
+#SBATCH --mem 24G --nodes 1 --ntasks 2 -J slice.GVCFGeno --out logs/GVCFGenoGATK4.slice_%a.%A.log  -p intel
+
 hostname
 MEM=24g
+
 module unload R
 module unload java
 module load picard
@@ -14,16 +15,6 @@ module load yq
 module load workspace/scratch
 
 source config.txt
-
-#declare -x TEMPDIR=$TEMP/$USER/$$
-
-#cleanup() {
-	#echo "rm temp is: $TEMPDIR"
-#	rm -rf $TEMPDIR
-#}#
-
-# Set trap to ensure cleanupis stopped
-#trap "cleanup; rm -rf $TEMPDIR; exit" SIGHUP SIGINT SIGTERM EXIT
 
 GVCF_INTERVAL=1
 N=${SLURM_ARRAY_TASK_ID}
@@ -38,10 +29,22 @@ fi
 if [ -f config.txt ]; then
 	source config.txt
 fi
+# The $SCRATCH folder is automatically created on HPCC slurm jobs, and removed at end of process
 TEMPDIR=$SCRATCH
-if [ ! -f $REFGENOME ]; then
-    module load samtools/1.11
+
+# if you need to use this on another system you can try something like this
+#declare -x TEMPDIR=$TEMP/$USER/$$
+#cleanup() {
+	#echo "rm temp is: $TEMPDIR"
+#	rm -rf $TEMPDIR
+#}#
+# Set trap to ensure cleanupis stopped
+#trap "cleanup; rm -rf $TEMPDIR; exit" SIGHUP SIGINT SIGTERM EXIT
+
+if [ ! -f $REFGENOME.fai ]; then
+    module load samtools
     samtools faidx $REFGENOME
+    module unload samtools
 fi
 NSTART=$(perl -e "printf('%d',1 + $GVCF_INTERVAL * ($N - 1))")
 NEND=$(perl -e "printf('%d',$GVCF_INTERVAL * $N)")
@@ -91,8 +94,6 @@ do
 		DB=$TEMPDIR/${GVCFFOLDER}_slice_$N
 		rm -rf $DB
 		gatk  --java-options "-Xmx$MEM -Xms$MEM" GenomicsDBImport --consolidate --merge-input-intervals --genomicsdb-workspace-path $DB $FILES $INTERVALS --tmp-dir $TEMPDIR --reader-threads $CPU
-		#--reader-threads $CPU
-		#gatk  --java-options "-Xmx$MEM -Xms$MEM" GenomicsDBImport --genomicsdb-workspace-path $DB $FILES $INTERVALS  --reader-threads $CPU
 		time gatk GenotypeGVCFs --reference $REFGENOME --output $GENOVCFOUT -V gendb://$DB --tmp-dir $TEMPDIR
 		ls -l $TEMPDIR
 		rm -rf $DB
@@ -179,7 +180,7 @@ do
 	    tabix $SELECTINDEL.gz
 	fi
 done
-
-if [ -d $TEMPDIR ]; then
-	rmdir $TEMPDIR
-fi
+# on UCR HPCC $SCRATCH folder is automatically deleted at end of job, this is unnecessary
+#if [ -d $TEMPDIR ]; then
+#  rmdir $TEMPDIR
+#fi
