@@ -30,9 +30,9 @@ fi
 module unload miniconda2
 module unload miniconda3
 module load parallel
-module load bcftools/1.14
-module load samtools/1.14
-module load IQ-TREE/2.1.3
+module load bcftools
+module load samtools
+module load iqtree/2.2.0
 module load fasttree
 
 print_fas() {
@@ -78,7 +78,7 @@ do
 
       #rsync -a $vcf.tbi $vcftmp.tbi
       # no ref genome alleles
-      #printf ">%s\n%s\n" $REFNAME $(bcftools view -e 'AF=1' ${vcf} | bcftools query -e 'INFO/AF < 0.1' -f '%REF') > $FAS
+      printf ">%s\n%s\n" $REFNAME $(bcftools query -f '%REF' ${vcftmp}) > $FAS
       parallel -j $CPU print_fas ::: $(bcftools query -l ${vcf}) ::: $vcftmp >> $FAS
       perl -ip -e 'if(/^>/){s/[\(\)#]/_/g; s/_+/_/g } else {s/[\*.]/-/g }' $FAS
     fi
