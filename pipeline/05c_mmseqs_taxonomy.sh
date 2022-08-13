@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#SBATCH -p short -N 1 -n 64 --mem 128gb --out logs/unmapped_asm_mmseqs_classify.%a.log
+#SBATCH -p short -N 1 -n 64 --mem 256gb --out logs/unmapped_asm_mmseqs_classify.%a.log
 
 module load mmseqs2
 module load KronaTools
@@ -45,11 +45,14 @@ do
     fi
     mkdir -p $OUTSEARCH/$STRAIN
     if [ ! -f  $OUTSEARCH/$STRAIN/mmseq_uniref50_report ]; then
-	mmseqs easy-taxonomy $CONTIG $DB $OUTSEARCH/$STRAIN/mmseq_uniref50 $SCRATCH --threads $CPU --lca-ranks kingdom,phylum,family  --tax-lineage 1
+	mmseqs easy-taxonomy $CONTIG $DB2 $OUTSEARCH/$STRAIN/mmseq_uniref50 $SCRATCH --threads $CPU --lca-ranks kingdom,phylum,family  --tax-lineage 1
     fi
     if [ ! -f $OUTSEARCH/$STRAIN/mmseq_sprot_report ]; then
 	mmseqs easy-taxonomy $CONTIG $DB $OUTSEARCH/$STRAIN/mmseq_sprot $SCRATCH --threads $CPU --lca-ranks kingdom,phylum,family --tax-lineage 1
     fi
+     mmseqs taxonomyreport $DB2 $OUTSEARCH/$STRAIN/mmseq_uniref50_lca.tsv $OUTSEARCH/$STRAIN/mmseq_uniref50.krona_native.html --report-mode 1
+     mmseqs taxonomyreport $DB $OUTSEARCH/$STRAIN/mmseq_sprot_lca.tsv $OUTSEARCH/$STRAIN/mmseq_sprot.krona_native.html --report-mode 1
+
     ktImportTaxonomy -o $OUTSEARCH/$STRAIN/mmseq_uniref50.krona.html $OUTSEARCH/$STRAIN/mmseq_uniref50_report
     ktImportTaxonomy -o $OUTSEARCH/$STRAIN/mmseq_sprot.krona.html $OUTSEARCH/$STRAIN/mmseq_sprot_report
 done
