@@ -47,14 +47,14 @@ do
     mmseqs createdb $CONTIG $IDX
     if [ ! -f  $OUTSEARCH/$STRAIN/mmseq_uniref50_report ]; then
 	mmseqs easy-taxonomy $CONTIG $DB2 $OUTSEARCH/$STRAIN/mmseq_uniref50 $SCRATCH --threads $CPU --lca-ranks kingdom,phylum,family  --tax-lineage 1
-	mmseqs taxonomy $IDX $DB2 $OUTSEARCH/$STRAIN/mmseq_uniref50_lca $SCRATCH -s 2 --threads $CPU
-	mmseqs taxonomyreport $DB2 $OUTSEARCH/$STRAIN/mmseq_uniref50_lca $OUTSEARCH/$STRAIN/mmseq_uniref50.krona_native.html --report-mode 1
+	mmseqs taxonomy $IDX $DB2 $SCRATCH/taxo_uniref50 $SCRATCH -s 2 --threads $CPU
+	mmseqs taxonomyreport $DB2 $SCRATCH/taxo_uniref50 $OUTSEARCH/$STRAIN/mmseq_uniref50.krona_native.html --report-mode 1
 	
     fi
     if [ ! -f $OUTSEARCH/$STRAIN/mmseq_sprot_report ]; then
 	mmseqs easy-taxonomy $CONTIG $DB $OUTSEARCH/$STRAIN/mmseq_sprot $SCRATCH --threads $CPU --lca-ranks kingdom,phylum,family  --tax-lineage 1
-	mmseqs taxonomy $IDX $DB $OUTSEARCH/$STRAIN/mmseq_sprot_lca $SCRATCH -s 2 --threads $CPU
-	mmseqs taxonomyreport $DB $OUTSEARCH/$STRAIN/mmseq_sprot_lca $OUTSEARCH/$STRAIN/mmseq_sprot.krona_native.html --report-mode 1
+	mmseqs taxonomy $IDX $DB $SCRATCH/taxo_sprot $SCRATCH -s 2 --threads $CPU
+	mmseqs taxonomyreport $DB $SCRATCH/taxo_sprot $OUTSEARCH/$STRAIN/mmseq_sprot.krona_native.html --report-mode 1
     fi
 
 done
