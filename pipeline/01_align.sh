@@ -4,7 +4,6 @@ module load bwa
 module load samtools
 module load picard
 module load gatk/4
-module load java
 module load workspace/scratch
 MEM=32g
 

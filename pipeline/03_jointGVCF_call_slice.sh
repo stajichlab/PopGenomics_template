@@ -1,20 +1,30 @@
 #!/usr/bin/bash -l
-#SBATCH --mem 24G --nodes 1 --ntasks 2 -J slice.GVCFGeno --out logs/GVCFGenoGATK4.slice_%a.%A.log  -p intel
+#SBATCH --mem 24G -N 1 -n 1 -c 2 -J slice.GVCFGeno --out logs/GVCFGenoGATK4.slice_%a.%A.log -a 1-6
+# might run on short queue if small enough
+# match array jobs (-a 1-4) to the number of chromosomes - if you have a lot then you can change the GVCF_INTERVAL in config.txt
+# and then can run in batches of 5, 10 etc to combine ranges to run through
 
+#--time 48:00:00
 hostname
 MEM=24g
-
-module unload R
-module unload java
 module load picard
 module load gatk/4
-module load java/13
 module load bcftools
 module load parallel
 module load yq
 module load workspace/scratch
 
 source config.txt
+
+#declare -x TEMPDIR=$TEMP/$USER/$$
+
+#cleanup() {
+	#echo "rm temp is: $TEMPDIR"
+#	rm -rf $TEMPDIR
+#}#
+
+# Set trap to ensure cleanupis stopped
+#trap "cleanup; rm -rf $TEMPDIR; exit" SIGHUP SIGINT SIGTERM EXIT
 
 GVCF_INTERVAL=1
 N=${SLURM_ARRAY_TASK_ID}
@@ -29,22 +39,10 @@ fi
 if [ -f config.txt ]; then
 	source config.txt
 fi
-# The $SCRATCH folder is automatically created on HPCC slurm jobs, and removed at end of process
 TEMPDIR=$SCRATCH
-
-# if you need to use this on another system you can try something like this
-#declare -x TEMPDIR=$TEMP/$USER/$$
-#cleanup() {
-	#echo "rm temp is: $TEMPDIR"
-#	rm -rf $TEMPDIR
-#}#
-# Set trap to ensure cleanupis stopped
-#trap "cleanup; rm -rf $TEMPDIR; exit" SIGHUP SIGINT SIGTERM EXIT
-
-if [ ! -f $REFGENOME.fai ]; then
-    module load samtools
+if [ ! -f $REFGENOME ]; then
+    module load samtools/1.11
     samtools faidx $REFGENOME
-    module unload samtools
 fi
 NSTART=$(perl -e "printf('%d',1 + $GVCF_INTERVAL * ($N - 1))")
 NEND=$(perl -e "printf('%d',$GVCF_INTERVAL * $N)")
@@ -77,6 +75,7 @@ fi
 mkdir -p $SLICEVCF
 for POPNAME in $(yq eval '.Populations | keys' $POPYAML | perl -p -e 's/^\s*\-\s*//')
 do
+	echo "POPNAME $POPNAME"
 	FILES=$(yq eval '.Populations.'$POPNAME'[]' $POPYAML | perl -p -e "s/(\S+)/-V $GVCFFOLDER\/\$1.g.vcf.gz/g"  )
 	INTERVALS=$(cut -f1 $REFGENOME.fai  | sed -n "${NSTART},${NEND}p" | perl -p -e 's/(\S+)\n/--intervals $1 /g')
 
@@ -94,6 +93,8 @@ do
 		DB=$TEMPDIR/${GVCFFOLDER}_slice_$N
 		rm -rf $DB
 		gatk  --java-options "-Xmx$MEM -Xms$MEM" GenomicsDBImport --consolidate --merge-input-intervals --genomicsdb-workspace-path $DB $FILES $INTERVALS --tmp-dir $TEMPDIR --reader-threads $CPU
+		#--reader-threads $CPU
+		#gatk  --java-options "-Xmx$MEM -Xms$MEM" GenomicsDBImport --genomicsdb-workspace-path $DB $FILES $INTERVALS  --reader-threads $CPU
 		time gatk GenotypeGVCFs --reference $REFGENOME --output $GENOVCFOUT -V gendb://$DB --tmp-dir $TEMPDIR
 		ls -l $TEMPDIR
 		rm -rf $DB
@@ -180,7 +181,7 @@ do
 	    tabix $SELECTINDEL.gz
 	fi
 done
-# on UCR HPCC $SCRATCH folder is automatically deleted at end of job, this is unnecessary
-#if [ -d $TEMPDIR ]; then
-#  rmdir $TEMPDIR
-#fi
+
+if [ -d $TEMPDIR ]; then
+	rmdir $TEMPDIR
+fi
