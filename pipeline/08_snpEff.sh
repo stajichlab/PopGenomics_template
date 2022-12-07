@@ -1,8 +1,8 @@
 #!/usr/bin/bash -l
-#SBATCH --mem=64G -p batch --nodes 1 --ntasks 2 --out logs/snpEff.log
+#SBATCH --mem=64G -N 1 -n 1 -c 2 --out logs/snpEff.log
 
 # this module defines SNPEFFJAR and SNPEFFDIR
-module load snpEff
+module load snpEff/4.3t
 module load bcftools
 module load yq
 
@@ -42,10 +42,12 @@ mkdir -p $SNPEFFOUT
 if [ ! -e $SNPEFFOUT/$snpEffConfig ]; then
 	rsync -a $SNPEFFDIR/snpEff.config $SNPEFFOUT/$snpEffConfig
 	echo "# Clusitaniae " >> $SNPEFFOUT/$snpEffConfig
-  	echo "$SNPEFFGENOME.genome : Candida lusitaniae ATCC42720 w CBS 6936 MT" >> $SNPEFFOUT/$snpEffConfig
+	if [ -z $NAME 
+  	echo "$SNPEFFGENOME.genome : $SNPEFFGENOME" >> $SNPEFFOUT/$snpEffConfig
 	echo "$FASTAGENOMEFILE"
 	chroms=$(grep '^>' $FASTAGENOMEFILE | perl -p -e 's/>//; s/\n/, /g' | perl -p -e 's/,\s+$/\n/')
 	echo -e "\t$SNPEFFGENOME.chromosomes: $chroms" >> $SNPEFFOUT/$snpEffConfig
+
 	# THIS WOULD NEED SPEIFIC FIX BY USER - IN A.fumigatus the MT contig is called mito_A_fumigatus_Af293
 	echo -e "\t$SNPEFFGENOME.Supercontig_1.1.codonTable : Alternative_Yeast_Nuclear" >> $SNPEFFOUT/$snpEffConfig
 	echo -e "\t$SNPEFFGENOME.Supercontig_1.2.codonTable : Alternative_Yeast_Nuclear" >> $SNPEFFOUT/$snpEffConfig
@@ -56,6 +58,7 @@ if [ ! -e $SNPEFFOUT/$snpEffConfig ]; then
 	echo -e "\t$SNPEFFGENOME.Supercontig_1.7.codonTable : Alternative_Yeast_Nuclear" >> $SNPEFFOUT/$snpEffConfig
 	echo -e "\t$SNPEFFGENOME.Supercontig_1.8.codonTable : Alternative_Yeast_Nuclear" >> $SNPEFFOUT/$snpEffConfig
 	echo -e "\t$SNPEFFGENOME.MT_CBS_6936.codonTable : Mold_Mitochondrial" >> $SNPEFFOUT/$snpEffConfig
+
 	mkdir -p $SNPEFFOUT/data/$SNPEFFGENOME
 	pigz -c $GFFGENOMEFILE > $SNPEFFOUT/data/$SNPEFFGENOME/genes.gff.gz
 	rsync -aL $REFGENOME $SNPEFFOUT/data/$SNPEFFGENOME/sequences.fa
