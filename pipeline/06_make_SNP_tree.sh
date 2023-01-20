@@ -70,12 +70,13 @@ do
 
     vcf=$root.vcf.gz
     if [[ ! -f $FAS || ${vcf} -nt $FAS ]]; then
-      vcftmp=$SCRATCH/$PREFIX.$POPNAME.$TYPE.vcf.gz
-      bcftools filter -O z -o $vcftemp --SnpGap 3 -e 'QUAL < 1000 || AF=1 || INFO/AF < 0.05 || F_MISSING > 0' $vcf
+      vcftemp=$SCRATCH/$PREFIX.$POPNAME.$TYPE.vcf.gz
+      echo "vcf=$vcf vcftemp=$vcftemp"
+      bcftools filter -Oz -o $vcftemp -e 'QUAL < 1000 || AF=1 || INFO/AF < 0.05 || F_MISSING > 0' $vcf
       bcftools index $vcftemp
       # no ref genome alleles
       printf ">%s\n%s\n" $REFNAME $(bcftools query -f '%REF') > $FAS
-      parallel -j $CPU print_fas ::: $(bcftools query -l ${vcf}) ::: $vcftmp >> $FAS
+      parallel -j $CPU print_fas ::: $(bcftools query -l ${vcf}) ::: $vcftemp >> $FAS
 #      perl -ip -e 'if(/^>/){s/[\(\)#]/_/g; s/_+/_/g } else {s/[\*.]/-/g }' $FAS
     fi
   done
