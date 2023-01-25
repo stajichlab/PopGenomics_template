@@ -40,7 +40,7 @@ This step will run the GATK GenotypeGVCFs step followed by splitting variants in
 
 * 04_combine_vcf.sh - this is a fast running script to gather the results from per-chrom/contig GVCF run into a single VCF file of filtered variants - the output files will be named by the PREFIX variable in the config.txt file.
 * 06_make_SNP_tree.sh - this script will generate a FASTA format alignment of variants - using a parallelized approach (which requires the [GNU parallel tool](https://www.gnu.org/software/parallel/)). So a multithreaded slurm job is useful here - it will also launch a FastTree run to generate a phylogenetic tree from the alignment.
-* 07_iqtree.sh - This script will generate a IQ-TREE run using the `GTR+ASC` model which is appropriate for SNP-based phylogenetic trees.
+* 07_iqtree.sh - This script will generate a IQ-TREE run using the `GTR+ASC` model which is appropriate for SNP-based phylogenetic trees. It will also run a FastTree tree which can be generated quickly but has some limitations in model complexity it can support.
 * 08_snpEff.sh - This script will generate a custom snpEff database using the GFF3 file in genome - this could be a little fragile so you may need to check that data files are download properly. This script right now has a lot A.fumigatus specific information.
 The se
 * 11_mosdepth.sh - Mosdepth depth-of-coverage comparison (TO FINISH WRITING DESCRIPTION)
