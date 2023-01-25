@@ -44,3 +44,6 @@ This step will run the GATK GenotypeGVCFs step followed by splitting variants in
 * 08_snpEff.sh - This script will generate a custom snpEff database using the GFF3 file in genome - this could be a little fragile so you may need to check that data files are download properly. This script right now has a lot A.fumigatus specific information.
 The se
 * 11_mosdepth.sh - Mosdepth depth-of-coverage comparison (TO FINISH WRITING DESCRIPTION)
+  - see the `scripts/plot_mosdepth_CNV.R` which generates plots useful for screening for CNVs
+
+There are additional scripts for taking unmapped reads and denovo assembling these and further screening these for simiarity in databases to likely identify contamination, symbionts, or divergent haplotyps and alleles not found in the the reference genome.
