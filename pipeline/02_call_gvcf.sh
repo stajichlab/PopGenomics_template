@@ -1,5 +1,5 @@
 #!/usr/bin/bash -l
-#SBATCH -p short -N 1 -n 1 -c 8 -C xeon--mem 32gb --out logs/make_gvcf.%a.log
+#SBATCH -p short -N 1 -n 1 -c 8 -C xeon --mem 32gb --out logs/make_gvcf.%a.log
 
 # alt with big datasets do
 ## SBATCH -p intel --time 48:00:00
