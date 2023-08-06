@@ -1,0 +1,20 @@
+name: popgenomics
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - cyvcf2
+  - bwa
+  - samtools
+  - bcftools
+  - picard
+  - gatk
+  - bcftools
+  - minimap2
+  - fasttree
+  - iqtree
+  - snpeff==4.3.1t
+  - mosdepth
+  - yq
+  - jellyfish
+  - sra-tools
