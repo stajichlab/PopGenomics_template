@@ -4,7 +4,20 @@ Template for Population Genomics variant calling in simple BASH + Slurm environm
 Alternative pipelines will be to bring in the snakemake implementation.
 
 This pipeline uses slurm arrayjobs to split up work across the cluster.
-There are 2 dimensions to think about, one is splitting across each strain/sample, the other is a separate job per chromosome (or chunks of chromosome)A
+There are 2 dimensions to think about, one is splitting across each strain/sample, the other is a separate job per chromosome (or chunks of chromosome).
+
+The env is setup to run on [UCR HPCC](https://hpcc.ucr.edu) using the UNIX module system. However a conda env can be built and activate in order to also have access to the same software for running. This example creates and loads an env in the same folder. 
+
+```
+conda create -p ./popgenomics -c bioconda -c conda-forge bwa samtools gatk bcftools minimap2 fasttree iqtree snpeff==4.3.1t mosdepth yq picard
+conda activate ./popgenomics
+```
+or install in default env folder
+
+```
+conda env create -f environment.yml
+conda activate popgenomics
+```
 
 A `logs` file is already created as part of this template to support storing of log files run and to keep files organized
 
