@@ -7,7 +7,7 @@
 hostname
 MEM=24g
 module load picard
-module load gatk/4
+module load gatk/4.4.0.0
 module load bcftools
 module load parallel
 module load yq
