@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 library(ggplot2)
 library(RColorBrewer)
 library(tidyverse)
@@ -58,8 +59,8 @@ plot_chrs <- function(chrom, data) {
 
   bedwindows$CHR <- sub(Prefix, "", bedwindows$Chr, perl = TRUE)
   unique(bedwindows$CHR)
-  bedwindows <- subset(bedwindows, as.numeric(bedwindows$CHR) < 20 )
-    bedwindows$CHR <- factor(as.numeric(bedwindows$CHR))
+  bedwindows <- subset(bedwindows, as.numeric(bedwindows$CHR) < 7 )
+  bedwindows$CHR <- factor(as.numeric(bedwindows$CHR))
   unique(bedwindows$CHR)
   bedwindows <- bedwindows[ with(bedwindows, order(CHR)), ]
   covsum <- as_tibble(bedwindows) %>%  group_by(Strain,CHR) %>% 
@@ -146,7 +147,7 @@ plot_chrs <- function(chrom, data) {
     ggsave(p,file=pdffile,width=20,height=30)
  }
 
-   plts <- lapply(unique(d$Strain), plot_strain, data = d)
+ plts <- lapply(unique(d$Strain), plot_strain, data = d)
 
 	strains = unique(d$Strain)
 	for(i in 1:length(unique(d$Strain) ) ) {
@@ -155,8 +156,10 @@ plot_chrs <- function(chrom, data) {
 	}
 	
 	anneu = d[d$Strain %in% Strains_With_Anneuploid,]
-	theseticks <- tapply(anneu$pos, anneu$index, quantile, probs = 0.5)
-	p <- ggplot(anneu, aes(x = pos, y = Depth, color = CHR)) + 
+	StrainsAnn = unique(anneu$Strain)
+  if ( length(StrainsAnn) > 0 ) {
+		theseticks <- tapply(anneu$pos, anneu$index, quantile, probs = 0.5)
+	  p <- ggplot(anneu, aes(x = pos, y = Depth, color = CHR)) + 
 	  geom_vline(mapping = NULL,xintercept = minorB, alpha = 0.5, linewidth = 0.1, colour = "grey15") +
 	  geom_point(alpha = 0.8, size = 0.4, shape = 16) +
 	  facet_wrap(~Strain,ncol=1) + scale_colour_manual(values = alternating_colors) +
@@ -164,13 +167,12 @@ plot_chrs <- function(chrom, data) {
 	  scale_x_continuous(name = "Chromosome",  expand = c(0, 0), breaks = theseticks, labels = unique(anneu$CHR)) +
 	  scale_y_continuous(name = "Normalized Read Depth",expand = c(0, 0), limits = c(0, 3)) +
 	  theme_classic() + theme(legend.position="none")
-	ggsave("CNV_plots/Anneuploid_Strains_Wrap.pdf",p,width=20,height=30)
+	  ggsave("CNV_plots/Anneuploid_Strains_Wrap.pdf",p,width=20,height=30)
 	
-	StrainsAnn = unique(anneu$Strain)
-	annplts <- lapply(StrainsAnn, plot_strain, data = anneu)
-	for(i in 1:length(StrainsAnn ) ) {
-	  pdffile=sprintf("CNV_plots/Anneu_StrainPlot_%dkb.%s.pdf", window/1000,StrainsAnn[i])
-	  ggsave(plot = annplts[[i]], file = pdffile, width=20, height=8)
-	}
-
+	  annplts <- lapply(StrainsAnn, plot_strain, data = anneu)
+	  for(i in 1:length(StrainsAnn ) ) {
+	    pdffile=sprintf("CNV_plots/Anneu_StrainPlot_%dkb.%s.pdf", window/1000,StrainsAnn[i])
+  	  ggsave(plot = annplts[[i]], file = pdffile, width=20, height=8)
+  	}
+}
 	
