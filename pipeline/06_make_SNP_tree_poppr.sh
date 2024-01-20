@@ -1,7 +1,6 @@
-#!/usr/bin/bash
-#SBATCH --mem=1gb --ntasks 1 --nodes 1
-#SBATCH -p short
-#SBATCH -J maketreePoppr --out logs/setup_tree_poppr.log
+#!/usr/bin/bash -l
+#SBATCH --mem=1gb -N 1 -n 1 -c 1 -p short
+#SBATCH -J PopprTree --out logs/setup_tree_poppr.log
 
 module load yq
 
@@ -40,11 +39,11 @@ do
     vcf=$root.vcf.gz
     tree=$TREEDIR/$PREFIX.$POPNAME.$TYPE.poppr.upgma.tre
     if [[ ! -s $tree || ${vcf} -nt $tree ]]; then
-	    sbatch -p batch -N 1 -n 8 --mem 32gb --out logs/make_poppr_$POPNAME.upgma.%A.log --wrap "time Rscript ./scripts/poppr_tree.R --vcf $vcf --tree $tree --method upgma"
+	    sbatch -N 1 -c 24 -n 1 --mem 128gb --out logs/make_poppr_$POPNAME.upgma.%A.log --wrap "time Rscript ./scripts/poppr_tree.R --vcf $vcf --tree $tree --method upgma"
     fi
     tree=$TREEDIR/$PREFIX.$POPNAME.$TYPE.poppr.nj.tre
     if [[ ! -s $tree || ${vcf} -nt $tree ]]; then
-	    sbatch -p batch -N 1 -n 8 --mem 32gb --out logs/make_poppr_$POPNAME.nj.%A.log --wrap "time Rscript ./scripts/poppr_tree.R  --vcf $vcf --tree $tree --method nj"
+	    sbatch -N 1 -n 1 -c 24 --mem 128gb --out logs/make_poppr_$POPNAME.nj.%A.log --wrap "time Rscript ./scripts/poppr_tree.R  --vcf $vcf --tree $tree --method nj"
     fi
   done
 done
