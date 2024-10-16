@@ -76,7 +76,6 @@ do
 	SELECTSNP=$STEM.SNP.selected.vcf
 	SELECTINDEL=$STEM.INDEL.selected.vcf
 	echo "$STEM is stem; GENOVCFOUT=$STEM.all.vcf POPNAME=$POPNAME slice=$SLICEVCF"
-	mkdir -p $TEMPDIR
 	if [ ! -f $GENOVCFOUT.gz ]; then
 	    if [ ! -f $GENOVCFOUT ]; then
 		DB=$TEMPDIR/${GVCFFOLDER}_slice_$N
