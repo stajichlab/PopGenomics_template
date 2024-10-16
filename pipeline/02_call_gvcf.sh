@@ -1,10 +1,8 @@
 #!/usr/bin/bash -l
-#SBATCH -p short -N 1 -n 1 -c 8 -C xeon --mem 32gb --out logs/make_gvcf.%a.log
-
-# alt with big datasets do
-## SBATCH -p intel --time 48:00:00
+#SBATCH -N 1 -n 1 -c 16 --mem 32gb --out logs/make_gvcf.%a.log --time 48:00:00
 
 module load picard
+module load java/13
 module load gatk/4
 module load bcftools
 
@@ -39,7 +37,7 @@ fi
 hostname
 date
 IFS=,
-tail -n +2 $SAMPFILE | sed -n ${N}p | while read STRAIN SAMPID
+cat $SAMPFILE | sed -n ${N}p | while read STRAIN SAMPID
 do
   # BEGIN THIS PART IS PROJECT SPECIFIC LIKELY
   # END THIS PART IS PROJECT SPECIFIC LIKELY
@@ -54,8 +52,8 @@ do
       time gatk --java-options -Xmx${MEM} HaplotypeCaller \
    	  --emit-ref-confidence GVCF --sample-ploidy 1 \
    	  --input $ALNFILE --reference $REFGENOME \
-   	  --output $GVCF --native-pair-hmm-threads $CPU \
-	     -G StandardAnnotation -G AS_StandardAnnotation -G StandardHCAnnotation
+   	  --output $GVCF --native-pair-hmm-threads $CPU --sample-name $STRAIN \
+	  -G StandardAnnotation -G AS_StandardAnnotation -G StandardHCAnnotation
  fi
  bgzip --threads $CPU -f $GVCF
  tabix $GVCF.gz
