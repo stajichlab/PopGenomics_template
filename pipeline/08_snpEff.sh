@@ -42,12 +42,11 @@ mkdir -p $SNPEFFOUT
 if [ ! -e $SNPEFFOUT/$snpEffConfig ]; then
 	rsync -a $SNPEFFDIR/snpEff.config $SNPEFFOUT/$snpEffConfig
 	echo "# Clusitaniae " >> $SNPEFFOUT/$snpEffConfig
-	if [ -z $NAME 
   	echo "$SNPEFFGENOME.genome : $SNPEFFGENOME" >> $SNPEFFOUT/$snpEffConfig
 	echo "$FASTAGENOMEFILE"
 	chroms=$(grep '^>' $FASTAGENOMEFILE | perl -p -e 's/>//; s/\n/, /g' | perl -p -e 's/,\s+$/\n/')
 	echo -e "\t$SNPEFFGENOME.chromosomes: $chroms" >> $SNPEFFOUT/$snpEffConfig
-
+	# FIXME FIXME
 	# THIS WOULD NEED SPEIFIC FIX BY USER - IN A.fumigatus the MT contig is called mito_A_fumigatus_Af293
 	echo -e "\t$SNPEFFGENOME.Supercontig_1.1.codonTable : Alternative_Yeast_Nuclear" >> $SNPEFFOUT/$snpEffConfig
 	echo -e "\t$SNPEFFGENOME.Supercontig_1.2.codonTable : Alternative_Yeast_Nuclear" >> $SNPEFFOUT/$snpEffConfig
