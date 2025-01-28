@@ -3,7 +3,7 @@
 
 module load picard
 module load java/13
-module load gatk/4
+module load gatk/4.6.0.0
 module load bcftools
 
 MEM=32g

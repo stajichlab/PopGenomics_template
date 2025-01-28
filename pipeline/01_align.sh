@@ -3,7 +3,7 @@
 module load bwa
 module load samtools
 module load picard
-module load gatk/4
+module load gatk/4.6.0.0
 module load java
 module load workspace/scratch
 
