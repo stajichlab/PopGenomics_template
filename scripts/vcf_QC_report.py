@@ -92,7 +92,7 @@ allstats = stats.copy()
 
 csvout.writerow(['Chromosome','Length','Total Variants','VarPerKb',
                  'SNP','INDEL','Ts','Tv','Ts/Tv'])
-for chrom in sorted(chromstats):
+for chrom in sorted(chromstats,key=lambda chrom: chromstats[chrom]['Length']):
     cstats = chromstats[chrom]
     for t in cstats:
         if type(cstats[t]) is dict:
