@@ -11,7 +11,7 @@ ALNFOLDER=aln
 ALNTOOL=bwa
 HTCFOLDER=cram
 HTCEXT=cram
-HTCFORMAT=cram
+HTCFORMAT="CRAM,version=3.0"
 TEMP=<<FIXME EXAMPLE: /scratch>>
 GVCFFOLDER=gvcf
 TREEDIR=strain_tree
