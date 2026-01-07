@@ -1,5 +1,5 @@
 #!/usr/bin/bash -l
-#SBATCH -p intel --mem 64gb -N 1 -n 4 --out logs/concat_vcf.log -p short
+#SBATCH --mem 64gb -N 1 -n 1 -c 4 --out logs/concat_vcf.log -p short
 
 module load bcftools
 module load yq
