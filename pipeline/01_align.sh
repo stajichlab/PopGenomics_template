@@ -1,10 +1,12 @@
 #!/bin/bash -l
 #SBATCH -N 1 -n 1 -c 16 --mem 32gb --out logs/bwa.%a.log --time 8:00:00
+
 module load bwa
 module load samtools
+module unload java
 module load picard
 module load gatk/4.6.1.0
-module load java
+
 module load workspace/scratch
 
 TMPOUTDIR=$SCRATCH
