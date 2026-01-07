@@ -1,9 +1,8 @@
 #!/usr/bin/bash -l
 #SBATCH -N 1 -n 1 -c 16 --mem 32gb --out logs/make_gvcf.%a.log --time 48:00:00
-
+module unload java
 module load picard
-module load java/13
-module load gatk/4.6.0.0
+module load gatk/4.6.1.0
 module load bcftools
 
 MEM=32g
